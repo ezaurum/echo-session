@@ -19,6 +19,7 @@ type Session interface {
 	IsExpired() bool
 	ExpiresAt(nano int64)
 	Store() Store
+	Remove(key string)
 }
 
 type SessionMap map[string]Session
