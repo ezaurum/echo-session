@@ -26,10 +26,6 @@
 
 
 [[constraint]]
-  branch = "develop"
-  name = "github.com/ezaurum/cthulthu"
-
-[[constraint]]
   name = "github.com/patrickmn/go-cache"
   version = "2.1.0"
 
