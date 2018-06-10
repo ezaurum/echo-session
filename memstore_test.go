@@ -1,8 +1,7 @@
-package memstore
+package session
 
 import (
 	"github.com/ezaurum/cthulthu/generators/snowflake"
-	"github.com/ezaurum/cthulthu/session"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestGetNew(t *testing.T) {
-	sm := Default()
+	sm := DefaultStore()
 
 	s := sm.GetNew()
 
@@ -19,7 +18,7 @@ func TestGetNew(t *testing.T) {
 }
 
 func TestGetNewSerial(t *testing.T) {
-	sm := Default()
+	sm := DefaultStore()
 
 	var wg sync.WaitGroup
 	wg.Add(3)
@@ -58,7 +57,7 @@ func TestGetNewSerial(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	sm := Default()
+	sm := DefaultStore()
 
 	s := sm.GetNew()
 	sessionID := s.ID()
@@ -73,7 +72,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetByGoroutine(t *testing.T) {
-	sm := Default()
+	sm := DefaultStore()
 
 	var wg sync.WaitGroup
 	wg.Add(3)
@@ -122,9 +121,9 @@ func TestGetByGoroutine(t *testing.T) {
 func TestQueryAllList(t *testing.T) {
 	sessionCount := 10000
 
-	sm := Default()
+	sm := DefaultStore()
 
-	sMap := make(session.SessionMap)
+	sMap := make(SessionMap)
 	for i := 0; i < sessionCount; i++ {
 		ss := sm.GetNew()
 		sMap[ss.ID()] = ss
@@ -139,7 +138,7 @@ func TestQueryAllList(t *testing.T) {
 
 //없으면 false 하도록
 func TestGetFail(t *testing.T) {
-	sm := Default()
+	sm := DefaultStore()
 	get, b := sm.Get("nothign")
 
 	assert.True(t, !b)
@@ -147,7 +146,7 @@ func TestGetFail(t *testing.T) {
 }
 
 func TestExpire(t *testing.T) {
-	sm := New(snowflake.New(0), time.Second, time.Hour)
+	sm := NewStore(snowflake.New(0), time.Second, time.Hour)
 
 	refreshed := sm.GetNew()
 	notRefreshed := sm.GetNew()
