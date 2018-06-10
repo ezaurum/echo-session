@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	DefaultSessionContextKey = "default session context key for congkong"
+	DefaultSessionContextKey = "default session context key"
 )
 
 func GetSession(c echo.Context) Session {
