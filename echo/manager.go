@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo"
 	"net/http"
 	"bitbucket.org/congkong-revivals/congkong/cookie"
+	"github.com/ezaurum/echo-session"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 )
 
 type Manager struct {
-	store               Store
+	store               session.Store
 	MaxAge              int
 	sessionIDCookieName string
 }
@@ -35,16 +36,16 @@ func (ca *Manager) Handler() echo.MiddlewareFunc {
 	}
 }
 
-func (ca Manager) CreateSession(c echo.Context) Session {
+func (ca Manager) CreateSession(c echo.Context) session.Session {
 	// created
 	session := ca.store.GetNew()
 
 	return session
 }
 
-func (ca *Manager) ActivateSession(c echo.Context, s Session) {
+func (ca *Manager) ActivateSession(c echo.Context, s session.Session) {
 	//refresh session expires
-	SetSession(c, s)
+	session.SetSession(c, s)
 	ca.SetSessionIDCookie(c, s)
 }
 
