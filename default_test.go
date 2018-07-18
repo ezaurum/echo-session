@@ -9,7 +9,7 @@ func TestDefaultGet(t *testing.T) {
 	s := New("test", nil)
 	s.Set("t", "haha")
 
-	assert.Equal(t, "test", s.ID())
+	assert.Equal(t, "test", s.Key())
 	r, b := s.Get("t")
 	assert.True(t, b)
 	assert.Equal(t, "haha", r)

@@ -1,2 +1,3 @@
-# echo-session
-session middleware for echo
+# session
+Session manager
+## for echo
