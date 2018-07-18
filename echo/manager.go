@@ -33,7 +33,6 @@ func (ca *Manager) Handler() echo.MiddlewareFunc {
 				se = ca.CreateSession(c)
 			}
 
-
 			ca.ActivateSession(c, se)
 			err := next(c)
 			if nil != err {
@@ -67,17 +66,27 @@ func (ca Manager) FindSession(c echo.Context) (session.Session, bool) {
 	}
 
 	s, sessionExist := ca.store.Get(sessionIDCookie.Value)
+	if sessionExist {
+		if s.IPAddress() != c.RealIP() {
+			sessionExist = false
+		}
+
+		if s.Agent() != c.Request().UserAgent() {
+			sessionExist = false
+		}
+	}
 	if !sessionExist {
 		// 세션 유효하지 않은 경우, 만료되었거나, 값 조작이거나
 		// 해당 쿠키 삭제
 		cookie.ClearCookie(c, ca.sessionIDCookieName)
 		return nil, true
 	}
+
 	return s, false
 }
 
 func (ca Manager) SetSessionIDCookie(c echo.Context, session session.Session) {
-	cookie := http.Cookie{
+	ck := http.Cookie{
 		Name:     ca.sessionIDCookieName,
 		Value:    session.Key(),
 		MaxAge:   ca.MaxAge,
@@ -86,14 +95,14 @@ func (ca Manager) SetSessionIDCookie(c echo.Context, session session.Session) {
 		Secure:   false,
 		HttpOnly: true,
 	}
-	c.SetCookie(&cookie)
+	c.SetCookie(&ck)
 }
 
 func Default() *Manager {
-	return NewMem(0, DefaultSessionExpires)
+	return New(0, DefaultSessionExpires)
 }
 
-func NewMem(node int64, expiresInSeconds int) *Manager {
+func New(node int64, expiresInSeconds int) *Manager {
 	duration := time.Duration(expiresInSeconds) * time.Second
 	manager := &Manager{
 		store:               memstore.NewStore(snowflake.New(node), duration, duration*2),
