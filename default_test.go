@@ -6,7 +6,7 @@ import (
 )
 
 func TestDefaultGet(t *testing.T) {
-	s := New("test", nil)
+	s := New("test", nil, "127.0.0.1", "test")
 	s.Set("t", "haha")
 
 	assert.Equal(t, "test", s.Key())

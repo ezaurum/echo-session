@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"bitbucket.org/congkong-revivals/congkong/cookie"
 	"github.com/ezaurum/echo-session"
+	"github.com/ezaurum/echo-session/memstore"
+	"github.com/labstack/gommon/random"
 )
 
 const (
@@ -16,6 +18,7 @@ const (
 
 type Manager struct {
 	store               session.Store
+	random              *random.Random
 	MaxAge              int
 	sessionIDCookieName string
 }
@@ -30,35 +33,40 @@ func (ca *Manager) Handler() echo.MiddlewareFunc {
 				se = ca.CreateSession(c)
 			}
 
+
 			ca.ActivateSession(c, se)
-			return next(c)
+			err := next(c)
+			if nil != err {
+				return err
+			}
+			// auto extend
+			ca.store.Set(se)
+			return nil
 		}
 	}
 }
 
 func (ca Manager) CreateSession(c echo.Context) session.Session {
 	// created
-	session := ca.store.GetNew()
+	session := ca.store.GetNew(c.RealIP(), c.Request().UserAgent())
 
 	return session
 }
 
 func (ca *Manager) ActivateSession(c echo.Context, s session.Session) {
 	//refresh session expires
-	session.SetSession(c, s)
+	SetSession(c, s)
 	ca.SetSessionIDCookie(c, s)
 }
 
-func (ca Manager) FindSession(c echo.Context) (Session, bool) {
+func (ca Manager) FindSession(c echo.Context) (session.Session, bool) {
 	sessionIDCookie, e := c.Cookie(ca.sessionIDCookieName)
 
 	if nil != e {
 		return nil, true
 	}
 
-	//TODO secure
 	s, sessionExist := ca.store.Get(sessionIDCookie.Value)
-
 	if !sessionExist {
 		// 세션 유효하지 않은 경우, 만료되었거나, 값 조작이거나
 		// 해당 쿠키 삭제
@@ -68,7 +76,7 @@ func (ca Manager) FindSession(c echo.Context) (Session, bool) {
 	return s, false
 }
 
-func (ca Manager) SetSessionIDCookie(c echo.Context, session Session) {
+func (ca Manager) SetSessionIDCookie(c echo.Context, session session.Session) {
 	cookie := http.Cookie{
 		Name:     ca.sessionIDCookieName,
 		Value:    session.Key(),
@@ -87,11 +95,11 @@ func Default() *Manager {
 
 func NewMem(node int64, expiresInSeconds int) *Manager {
 	duration := time.Duration(expiresInSeconds) * time.Second
-	k := snowflake.New(node)
 	manager := &Manager{
-		store:               NewStore(k, duration, duration*2),
+		store:               memstore.NewStore(snowflake.New(node), duration, duration*2),
 		MaxAge:              expiresInSeconds,
 		sessionIDCookieName: IDCookieName,
+		random:random.New(),
 	}
 	return manager
 }

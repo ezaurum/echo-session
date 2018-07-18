@@ -152,8 +152,10 @@ func TestExpire(t *testing.T) {
 	refreshed := sm.GetNew()
 	notRefreshed := sm.GetNew()
 
-	time.Sleep(time.Millisecond * 500)
+	sm.Set(refreshed)
+	sm.Set(notRefreshed)
 
+	time.Sleep(time.Millisecond * 500)
 	sm.Set(refreshed)
 
 	time.Sleep(time.Millisecond * 500)
@@ -162,7 +164,7 @@ func TestExpire(t *testing.T) {
 
 	assert.True(t, !b)
 	assert.Nil(t, get)
-	assert.True(t, notRefreshed.IsExpired())
+	assert.True(t, notRefreshed.IsExpired(), "expires %v", notRefreshed)
 
 	get0, b0 := sm.Get(refreshed.Key())
 

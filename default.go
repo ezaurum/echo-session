@@ -4,23 +4,35 @@ import "time"
 
 var _ Session = &DefaultSession{}
 
-func New(id string, store Store) Session {
+func New(id string, store Store, ipAddress string, agent string) Session {
 	return &DefaultSession{
-		id:    id,
-		M:     make(map[string]interface{}),
-		store: store,
+		key:       id,
+		M:         make(map[string]interface{}),
+		store:     store,
+		ipAddress: ipAddress,
+		agent:     agent,
 	}
 }
 
 type DefaultSession struct {
-	id      string
-	M       map[string]interface{}
-	store   Store
-	expires int64
+	key       string
+	M         map[string]interface{}
+	store     Store
+	expires   int64
+	ipAddress string
+	agent     string
+}
+
+func (s DefaultSession) IPAddress() string {
+	return s.ipAddress
+}
+
+func (s DefaultSession) Agent() string {
+	return s.agent
 }
 
 func (s DefaultSession) Key() string {
-	return s.id
+	return s.key
 }
 
 func (s DefaultSession) Get(k string) (interface{}, bool) {
@@ -31,11 +43,11 @@ func (s DefaultSession) Get(k string) (interface{}, bool) {
 	return nil, false
 }
 
-func (s DefaultSession) Set(k string, o interface{}) {
+func (s *DefaultSession) Set(k string, o interface{}) {
 	s.M[k] = o
 }
 
-func (s DefaultSession) Remove(k string) {
+func (s *DefaultSession) Remove(k string) {
 	delete(s.M, k)
 }
 
@@ -67,7 +79,7 @@ func (s DefaultSession) MustGet(k string) interface{} {
 	return nil
 }
 
-func (s DefaultSession) Extend(duration time.Duration) {
+func (s *DefaultSession) Extend(duration time.Duration) {
 	s.ExpiresAt(time.Now().Add(duration).UnixNano())
 }
 

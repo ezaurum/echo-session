@@ -23,6 +23,8 @@ type Session interface {
 	Remove(key string)
 	Extend(duration time.Duration)
 	Destroy()
+	IPAddress() string
+	Agent() string
 }
 
 type StoreMap map[string]Session

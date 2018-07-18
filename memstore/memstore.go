@@ -6,6 +6,9 @@ import (
 	"github.com/patrickmn/go-cache"
 	"time"
 	"github.com/ezaurum/echo-session"
+	"strings"
+	"crypto/sha256"
+	"github.com/labstack/gommon/random"
 )
 
 var _ session.Store = &memorySessionStore{}
@@ -25,21 +28,35 @@ func NewStore(k generators.IDGenerator, duration time.Duration,
 	return &memorySessionStore{
 		duration:        duration,
 		cleanupInterval: cleanupInterval,
-		keyGenerator:    k,
 		cache:           cache.New(duration, cleanupInterval),
+		random: random.New(),
 	}
 }
 
 type memorySessionStore struct {
 	cache           *cache.Cache
-	keyGenerator    generators.IDGenerator
+	random          *random.Random
 	duration        time.Duration
 	cleanupInterval time.Duration
 }
 
-func (sm memorySessionStore) GetNew(args...string) session.Session {
-	id := sm.keyGenerator.Generate()
-	s := session.New(id, sm)
+func (sm memorySessionStore) GetNew(args ...string) session.Session {
+	var ipAddress  string
+	var agent  string
+	if len(args) > 1{
+		ipAddress = args[0]
+		agent = args[1]
+	} else {
+		ipAddress = sm.random.String(10, random.Alphanumeric)
+		agent = sm.random.String(10, random.Alphanumeric)
+	}
+	hash := sha256.New()
+	hashTarget := strings.Join(args, " ")
+	hashTarget += sm.random.String(10, random.Alphanumeric)
+	hash.Write([]byte(hashTarget))
+	sum := hash.Sum(nil)
+	s := session.New(string(sum), sm, ipAddress, agent)
+	s.Extend(sm.duration)
 	sm.Set(s)
 	return s
 }
