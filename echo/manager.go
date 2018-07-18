@@ -70,7 +70,7 @@ func (ca Manager) FindSession(c echo.Context) (Session, bool) {
 func (ca Manager) SetSessionIDCookie(c echo.Context, session Session) {
 	cookie := http.Cookie{
 		Name:     ca.sessionIDCookieName,
-		Value:    session.ID(),
+		Value:    session.Key(),
 		MaxAge:   ca.MaxAge,
 		Domain:   "",
 		Path:     "/",
