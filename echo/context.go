@@ -1,4 +1,4 @@
-package session
+package echo
 
 import (
 	"github.com/labstack/echo"
