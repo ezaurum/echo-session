@@ -5,10 +5,10 @@ import (
 	"github.com/ezaurum/cthulthu/generators/snowflake"
 	"github.com/labstack/echo"
 	"net/http"
-	"bitbucket.org/congkong-revivals/congkong/cookie"
 	"github.com/labstack/gommon/random"
 	"github.com/ezaurum/session"
 	"github.com/ezaurum/session/memstore"
+	"github.com/ezaurum/cthulthu/cookie"
 )
 
 const (
