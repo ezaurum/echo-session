@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 	"time"
-	"github.com/ezaurum/echo-session"
+	"github.com/ezaurum/session"
 )
 
 func TestGetNew(t *testing.T) {

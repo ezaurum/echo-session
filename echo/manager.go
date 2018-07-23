@@ -6,9 +6,8 @@ import (
 	"github.com/labstack/echo"
 	"net/http"
 	"bitbucket.org/congkong-revivals/congkong/cookie"
-	"github.com/ezaurum/echo-session"
-	"github.com/ezaurum/echo-session/memstore"
 	"github.com/labstack/gommon/random"
+	"github.com/ezaurum/session"
 )
 
 const (

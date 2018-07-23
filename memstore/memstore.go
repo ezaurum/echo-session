@@ -5,7 +5,7 @@ import (
 	"github.com/ezaurum/cthulthu/generators/snowflake"
 	"github.com/patrickmn/go-cache"
 	"time"
-	"github.com/ezaurum/echo-session"
+	"github.com/ezaurum/session"
 	"strings"
 	"crypto/sha256"
 	"github.com/labstack/gommon/random"

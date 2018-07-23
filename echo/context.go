@@ -2,7 +2,7 @@ package session
 
 import (
 	"github.com/labstack/echo"
-	"github.com/ezaurum/echo-session"
+	"github.com/ezaurum/session"
 )
 
 const (
