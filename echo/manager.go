@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/congkong-revivals/congkong/cookie"
 	"github.com/labstack/gommon/random"
 	"github.com/ezaurum/session"
+	"github.com/ezaurum/session/memstore"
 )
 
 const (
