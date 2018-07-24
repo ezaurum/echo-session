@@ -9,6 +9,7 @@ import (
 	"strings"
 	"crypto/sha256"
 	"github.com/labstack/gommon/random"
+	"encoding/base64"
 )
 
 var _ session.Store = &memorySessionStore{}
@@ -29,7 +30,7 @@ func NewStore(k generators.IDGenerator, duration time.Duration,
 		duration:        duration,
 		cleanupInterval: cleanupInterval,
 		cache:           cache.New(duration, cleanupInterval),
-		random: random.New(),
+		random:          random.New(),
 	}
 }
 
@@ -41,9 +42,9 @@ type memorySessionStore struct {
 }
 
 func (sm memorySessionStore) GetNew(args ...string) session.Session {
-	var ipAddress  string
-	var agent  string
-	if len(args) > 1{
+	var ipAddress string
+	var agent string
+	if len(args) > 1 {
 		ipAddress = args[0]
 		agent = args[1]
 	} else {
@@ -55,7 +56,8 @@ func (sm memorySessionStore) GetNew(args ...string) session.Session {
 	hashTarget += sm.random.String(10, random.Alphanumeric)
 	hash.Write([]byte(hashTarget))
 	sum := hash.Sum(nil)
-	s := session.New(string(sum), sm, ipAddress, agent)
+	key := base64.RawStdEncoding.EncodeToString(sum)
+	s := session.New(key, sm, ipAddress, agent)
 	s.Extend(sm.duration)
 	sm.Set(s)
 	return s
