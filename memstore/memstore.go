@@ -56,7 +56,7 @@ func (sm memorySessionStore) GetNew(args ...string) session.Session {
 	hashTarget += sm.random.String(10, random.Alphanumeric)
 	hash.Write([]byte(hashTarget))
 	sum := hash.Sum(nil)
-	key := base64.RawStdEncoding.EncodeToString(sum)
+	key := base64.RawURLEncoding.EncodeToString(sum)
 	s := session.New(key, sm, ipAddress, agent)
 	s.Extend(sm.duration)
 	sm.Set(s)
