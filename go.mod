@@ -9,4 +9,5 @@ require (
 	github.com/labstack/gommon v0.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/stretchr/testify v1.4.0
+	golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c
 )

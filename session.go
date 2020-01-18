@@ -3,7 +3,7 @@ package session
 import "time"
 
 type Store interface {
-	GetNew(args...string) Session
+	GetNew(args ...string) Session
 	Get(id string) (Session, bool)
 	Set(session Session)
 	Delete(key string)

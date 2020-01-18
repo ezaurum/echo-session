@@ -1,8 +1,8 @@
 package echo
 
 import (
-	"github.com/labstack/echo"
 	"github.com/ezaurum/session"
+	"github.com/labstack/echo"
 )
 
 const (

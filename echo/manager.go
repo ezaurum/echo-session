@@ -1,14 +1,14 @@
 package echo
 
 import (
-	"time"
+	"github.com/ezaurum/cthulthu/cookie"
 	"github.com/ezaurum/cthulthu/generators/snowflake"
-	"github.com/labstack/echo"
-	"net/http"
-	"github.com/labstack/gommon/random"
 	"github.com/ezaurum/session"
 	"github.com/ezaurum/session/memstore"
-	"github.com/ezaurum/cthulthu/cookie"
+	"github.com/labstack/echo"
+	"github.com/labstack/gommon/random"
+	"net/http"
+	"time"
 )
 
 const (
@@ -108,7 +108,7 @@ func New(node int64, expiresInSeconds int) *Manager {
 		store:               memstore.NewStore(snowflake.New(node), duration, duration*2),
 		MaxAge:              expiresInSeconds,
 		sessionIDCookieName: IDCookieName,
-		random:random.New(),
+		random:              random.New(),
 	}
 	return manager
 }

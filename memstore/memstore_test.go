@@ -2,11 +2,11 @@ package memstore
 
 import (
 	"github.com/ezaurum/cthulthu/generators/snowflake"
+	"github.com/ezaurum/session"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 	"time"
-	"github.com/ezaurum/session"
 )
 
 func TestGetNew(t *testing.T) {

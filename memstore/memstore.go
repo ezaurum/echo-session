@@ -1,15 +1,15 @@
 package memstore
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"github.com/ezaurum/cthulthu/generators"
 	"github.com/ezaurum/cthulthu/generators/snowflake"
-	"github.com/patrickmn/go-cache"
-	"time"
 	"github.com/ezaurum/session"
-	"strings"
-	"crypto/sha256"
 	"github.com/labstack/gommon/random"
-	"encoding/base64"
+	"github.com/patrickmn/go-cache"
+	"strings"
+	"time"
 )
 
 var _ session.Store = &memorySessionStore{}
