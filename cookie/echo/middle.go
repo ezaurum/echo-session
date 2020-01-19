@@ -8,14 +8,14 @@ import (
 	"net/http"
 )
 
-const cookieJarContextKey = "cookie.jar.context-key"
+const contextKey = "cookie.jar.context-key"
 
 var (
 	JarIsNotPresentErr = errors.New("jar is not present error")
 )
 
 func Remove(c echo.Context, cookieName string) error {
-	jar := c.Get(cookieJarContextKey).(cookie.Jar)
+	jar := c.Get(contextKey).(cookie.Jar)
 	if nil == jar {
 		return JarIsNotPresentErr
 	}
@@ -24,7 +24,7 @@ func Remove(c echo.Context, cookieName string) error {
 }
 
 func Set(c echo.Context, setCookie *http.Cookie) error {
-	jar := c.Get(cookieJarContextKey).(cookie.Jar)
+	jar := c.Get(contextKey).(cookie.Jar)
 	if nil == jar {
 		return JarIsNotPresentErr
 	}
@@ -33,7 +33,7 @@ func Set(c echo.Context, setCookie *http.Cookie) error {
 }
 
 func Get(c echo.Context, cookieName string) (*http.Cookie, error) {
-	jar := c.Get(cookieJarContextKey).(cookie.Jar)
+	jar := c.Get(contextKey).(cookie.Jar)
 	if nil == jar {
 		return nil, JarIsNotPresentErr
 	}
@@ -47,7 +47,7 @@ func Middleware(config Config) echo.MiddlewareFunc {
 				return next(c)
 			}
 			jar := cookie.New(c.Request())
-			c.Set(cookieJarContextKey, jar)
+			c.Set(contextKey, jar)
 			if err := next(c); nil != err {
 				return err
 			}
