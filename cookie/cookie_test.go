@@ -1,59 +1,167 @@
 package cookie
 
 import (
-	"fmt"
-	"golang.org/x/net/publicsuffix"
-	"log"
+	"github.com/stretchr/testify/assert"
 	"net/http"
-	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
 	"testing"
 )
 
-func TestCookie( t *testing.T) {
-	// Start a server to give us cookies.
+func TestGet(t *testing.T) {
+
+	// 테스트 서버
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if cookie, err := r.Cookie("Flavor"); err != nil {
-			http.SetCookie(w, &http.Cookie{Name: "Flavor", Value: "Chocolate Chip"})
-		} else {
-			cookie.Value = "Oatmeal Raisin"
-			http.SetCookie(w, cookie)
-		}
+		j := New(r)
+		get := j.Get("GetCookie")
+		assert.Equal(t, "GetCookieValue", get.Value)
+		j.Write(w)
 	}))
+
 	defer ts.Close()
 
 	u, err := url.Parse(ts.URL)
-	if err != nil {
-		log.Fatal(err)
-	}
+	assert.NoError(t, err)
 
-	// All users of cookiejar should import "golang.org/x/net/publicsuffix"
-	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	assert.NoError(t, err)
 	client := &http.Client{
-		Jar: jar,
 	}
 
-	if _, err = client.Get(u.String()); err != nil {
-		log.Fatal(err)
+	// 리퀘스트에 쿠키가 있으면
+
+	getCookie := http.Cookie{
+		Name:   "GetCookie",
+		Value:  "GetCookieValue",
+		Path:   u.Path,
+		Domain: u.Hostname(),
 	}
 
-	fmt.Println("After 1st request:")
-	for _, cookie := range jar.Cookies(u) {
-		fmt.Printf("  %s: %s\n", cookie.Name, cookie.Value)
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	req.Header.Set("Cookie", getCookie.String())
+	assert.NoError(t, err)
+
+	res, err := client.Do(req)
+	assert.NoError(t, err)
+	// Get 으로 가져올 수 있다
+
+	// response 에는 없다
+	get := res.Header.Get("Set-Cookie")
+	assert.Equal(t, 0, len(get))
+}
+
+func TestSet(t *testing.T) {
+
+	// 테스트 서버
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		j := New(r)
+		// 리퀘스트에 쿠키가 있으면
+		get := j.Get("GetCookie")
+		assert.Equal(t, "GetCookieValue", get.Value)
+
+		j.Set(&http.Cookie{
+			Name:  "SetCookie",
+			Value: "SetCookieValue",
+			Path:  r.RequestURI,
+		})
+
+		j.Set(&http.Cookie{
+			Name:  "GetCookie",
+			Value: "GetCookieValue2",
+			Path:  r.RequestURI,
+		})
+		j.Write(w)
+	}))
+
+	defer ts.Close()
+
+	u, err := url.Parse(ts.URL)
+	assert.NoError(t, err)
+
+	assert.NoError(t, err)
+	client := &http.Client{
 	}
 
-	if _, err = client.Get(u.String()); err != nil {
-		log.Fatal(err)
+	getCookie := http.Cookie{
+		Name:   "GetCookie",
+		Value:  "GetCookieValue",
+		Path:   u.Path,
+		Domain: u.Hostname(),
 	}
 
-	fmt.Println("After 2nd request:")
-	for _, cookie := range jar.Cookies(u) {
-		fmt.Printf("  %s: %s\n", cookie.Name, cookie.Value)
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	req.Header.Set("Cookie", getCookie.String())
+	assert.NoError(t, err)
+
+	res, err := client.Do(req)
+	assert.NoError(t, err)
+	// Get 으로 가져올 수 있다
+	// Set으로 쿠키값을 지정하면
+	// response 에 해당값이 있다
+	get := res.Header["Set-Cookie"]
+	assert.Regexp(t, "SetCookie=SetCookieValue", get)
+	assert.Regexp(t, "GetCookie=GetCookieValue2", get)
+}
+
+func TestRemove(t *testing.T) {
+
+	// 테스트 서버
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		j := New(r)
+		// 리퀘스트에 쿠키가 있으면
+		get := j.Get("GetCookie")
+		assert.Equal(t, "GetCookieValue", get.Value)
+		j.Remove("GetCookie")
+
+		j.Set(&http.Cookie{
+			Name:  "SetCookie",
+			Value: "SetCookieValue",
+			Path:  r.RequestURI,
+		})
+
+		j.Write(w)
+	}))
+
+	defer ts.Close()
+
+	u, err := url.Parse(ts.URL)
+	assert.NoError(t, err)
+
+	assert.NoError(t, err)
+	client := &http.Client{
 	}
 
+	getCookie := http.Cookie{
+		Name:   "GetCookie",
+		Value:  "GetCookieValue",
+		Path:   u.Path,
+		Domain: u.Hostname(),
+	}
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	req.Header.Set("Cookie", getCookie.String())
+	assert.NoError(t, err)
+
+	res, err := client.Do(req)
+	assert.NoError(t, err)
+	// Get 으로 가져올 수 있다
+	// Set으로 쿠키값을 지정하면
+	// response 에 해당값이 있다
+	get := res.Header["Set-Cookie"]
+	// 쿠키는 2개
+	assert.Equal(t, 2, len(get))
+	setCookie := false
+	setReg := regexp.MustCompile("SetCookie=SetCookieValue")
+	getCookie2 := false
+	getReg := regexp.MustCompile(`GetCookie=$`)
+	for _, s := range get {
+		if setReg.MatchString(s) {
+			setCookie = true
+		}
+		if getReg.MatchString(s) {
+			getCookie2 = true
+		}
+	}
+	assert.Equal(t, true, setCookie, "SetCookie is not set")
+	assert.Equal(t, true, getCookie2, "GetCookie is not changed")
 }
